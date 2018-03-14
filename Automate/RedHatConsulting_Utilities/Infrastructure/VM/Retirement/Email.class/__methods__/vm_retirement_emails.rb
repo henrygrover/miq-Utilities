@@ -9,7 +9,8 @@
 #    requester replies to the email
 # 3. signature - used to stamp the email with a custom signature
 #
-@DEBUG = false
+@DEBUG = true
+require 'cgi'
 
 # Look in the current object for a VM
 vm = $evm.object['vm']
@@ -157,6 +158,8 @@ if event_type == "vm_retired"
   body += "</table>"
   body += "</br>"
 end
+
+body = CGI::escapeHTML(body)
 
 $evm.log("info", "Sending email to <#{to}> from <#{from}> subject: <#{subject}>") if @DEBUG
 $evm.log("info", "Sending email body: #{body}")                                   if @DEBUG

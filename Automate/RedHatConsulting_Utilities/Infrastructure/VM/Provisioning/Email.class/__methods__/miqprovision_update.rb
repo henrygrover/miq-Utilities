@@ -3,7 +3,8 @@
 # Designed to be called from any of the `Infrastructure/VM/Provisioning/Email`
 # instances to standerdize what email updates look like.
 #
-@DEBUG = false
+@DEBUG = true
+require 'cgi'
 
 PROVISIONING_TELEMETRY_PREFIX = "Provisioning: Telemetry:"
 
@@ -219,6 +220,8 @@ def send_vm_provision_update_email(prov, to, from, update_message, vm_current_pr
     end 
     body += "</table>"
   end
+
+  body = CGI::escapeHTML(body)
 
   # Send email
   $evm.log("info", "Sending email to <#{to}> from <#{from}> subject: <#{subject}>") if @DEBUG
