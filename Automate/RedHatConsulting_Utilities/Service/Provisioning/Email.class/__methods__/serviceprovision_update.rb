@@ -288,7 +288,7 @@ def send_service_provision_update_email(request, to, from, update_message, cfme_
   # Send email
   $evm.log("info", "Sending email to <#{to}> from <#{from}> subject: <#{subject}>") if @DEBUG
   $evm.log("info", "Sending email body: #{body}")                                   if @DEBUG
-  $evm.execute(:send_email, to, from, subject, body)
+  #$evm.execute(:send_email, to, from, subject, body)
   
   $evm.log('info', "END: send_service_provision_update_email") if @DEBUG
 end
@@ -315,12 +315,12 @@ begin
   update_message ||= 'None'
   
   # send the email
-  unless to_email_addresses.blank?
-    send_service_provision_update_email(request, to_email_addresses, from_email_address, update_message, cfme_hostname)
-  else
-    warn_message = "No one to send Service Provision Update email to. Request: #{request.id}"
-    $evm.log(:warn, warn_message)
-    $evm.create_notification(:level   => 'warning',
-                             :message => warn_message)
-  end
+  #unless to_email_addresses.blank?
+  send_service_provision_update_email(request, to_email_addresses, from_email_address, update_message, cfme_hostname)
+  #else
+  #  warn_message = "No one to send Service Provision Update email to. Request: #{request.id}"
+  #  $evm.log(:warn, warn_message)
+  #  $evm.create_notification(:level   => 'warning',
+  #                           :message => warn_message)
+  #end
 end

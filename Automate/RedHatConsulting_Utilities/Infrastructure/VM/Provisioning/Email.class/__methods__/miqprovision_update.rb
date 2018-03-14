@@ -226,7 +226,7 @@ def send_vm_provision_update_email(prov, to, from, update_message, vm_current_pr
   # Send email
   $evm.log("info", "Sending email to <#{to}> from <#{from}> subject: <#{subject}>") if @DEBUG
   $evm.log("info", "Sending email body: #{body}")                                   if @DEBUG
-  $evm.execute(:send_email, to, from, subject, body)
+  #$evm.execute(:send_email, to, from, subject, body)
   
   $evm.log('info', "END: send_vm_provision_update_email") if @DEBUG
 end
@@ -259,12 +259,5 @@ begin
   vm_current_provision_ae_result = get_param(:vm_current_provision_ae_result)
   
   # send the email
-  unless to_email_addresses.blank?
-    send_vm_provision_update_email(prov, to_email_addresses, from_email_address, update_message, vm_current_provision_ae_result, cfme_hostname)
-  else
-    warn_message = "No one to send VM Provision Update email to. Request: #{prov.miq_provision_request.id}"
-    $evm.log(:warn, warn_message)
-    $evm.create_notification(:level   => 'warning',
-                             :message => warn_message)
-  end
+  send_vm_provision_update_email(prov, to_email_addresses, from_email_address, update_message, vm_current_provision_ae_result, cfme_hostname)
 end
