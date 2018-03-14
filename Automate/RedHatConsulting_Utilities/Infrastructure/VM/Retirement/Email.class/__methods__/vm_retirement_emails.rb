@@ -159,8 +159,6 @@ if event_type == "vm_retired"
   body += "</br>"
 end
 
-body = CGI::escapeHTML(body)
-
 $evm.log("info", "Sending email to <#{to}> from <#{from}> subject: <#{subject}>") if @DEBUG
 $evm.log("info", "Sending email body: #{body}")                                   if @DEBUG
 $evm.execute('send_email', to, from, subject, body)
