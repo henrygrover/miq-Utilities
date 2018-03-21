@@ -22,23 +22,23 @@
 #   $evm.root['miq_provision'].option || $evm.root.attributes
 #     #{dialog_disk_option_prefix}_#_size           - Size of the disk to add in gigabytes.
 #                                                     Required.
-#                                                     Maybe prefixed with 'dialog_'.
+#                                                     May be prefixed with 'dialog_'.
 #     #{dialog_disk_option_prefix}_#_thin_provision - Thin provision, or thick provision disk.
 #                                                     Optional.
 #                                                     Default is true.
-#                                                     Maybe prefixed with 'dialog_'.
+#                                                     May be prefixed with 'dialog_'.
 #     #{dialog_disk_option_prefix}_#_dependent      - Whether new disk is dependent.
 #                                                     Optional.
 #                                                     Default is true.
-#                                                     Maybe prefixed with 'dialog_'.
+#                                                     May be prefixed with 'dialog_'.
 #     #{dialog_disk_option_prefix}_#_persistent     - Whether new disk is persistent.
 #                                                     Optional.
 #                                                     Default is true.
-#                                                     Maybe prefixed with 'dialog_'.
+#                                                     May be prefixed with 'dialog_'.
 #     #{dialog_disk_option_prefix}_#_bootable       - Whether new disk is bootable.
 #                                                     Optional.
 #                                                     Default is #{default_bootable}.
-#                                                     Maybe prefixed with 'dialog_'.
+#                                                     May be prefixed with 'dialog_'.
 #
 #     EX:
 #       {
@@ -132,7 +132,7 @@ begin
   new_disk_queue_name = "#{disk_option_prefix}_new_disks_queue".to_sym
   $evm.log(:info, "new_disk_queue_name => #{new_disk_queue_name}") if @DEBUG
   
-  # if saved sate load from that
+  # if saved state load from that
   # else first iteration and need to create disk queue
   new_disks_queue = nil
   if $evm.state_var_exist?(new_disk_queue_name)
@@ -216,7 +216,7 @@ begin
     $evm.log(:info, "Add new disk of size '#{new_disk_options[:size]}G' to VM #{vm.name} with new_disk_options: #{new_disk_options}")
     size_mb = new_disk_options[:size].to_i * 1024 # assume size is in gigabytes
     vm.add_disk(
-      nil, # API want's this to be nil, why it asks for it is unknown....
+      nil, # API wants this to be nil, why it asks for it is unknown....
       size_mb,
       new_disk_options
     )
