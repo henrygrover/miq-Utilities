@@ -206,11 +206,50 @@ begin
     # remove disks of 0 size from queue
     new_disks_queue.delete_if { |new_disk_num, new_disk_options| new_disk_options[:size].nil? || new_disk_options[:size] == 0 }
   end
+
+  last_disk_succesful = nil
+  if $evm.state_var_exist?(:last_disk)
+    retry_threshold = 5
+    retry_count = $evm.get_state_var(:retry_count).nil? ? 0 : $evm.get_state_var(:retry_count)
+
+    last_disk = $evm.get_state_var(:last_disk)
+    disk_count = $evm.get_state_var(:disk_count)
+    storage_size = $evm.get_state_var(:storage_size)
+
+    #If we haven't given up on this disk, check whether it has been added
+    if retry_count <= retry_threshold
+      unless last_disk.nil?
+        $evm.log(:info, "Checking that a disk was created with options #{last_disk}") if @DEBUG
+        #We should have one more disk than before, and our total storage should increase by the size (in bytes) of the new disk
+        if vm.num_hard_disks == disk_count + 1 and vm.provisioned_storage == storage_size + last_disk[:size].to_i * 1073741824
+          last_disk_successful = true
+          $evm.set_state_var(:retry_count, 0)
+          $evm.set_state_var(:last_disk, nil)
+        else
+          last_disk_succesful = false
+          $evm.set_state_var(:retry_count, retry_count + 1)
+        end
+      end
+    #Else if we've given up, add it back to the queue to be attempted later
+    else
+      $evm.log(:info, "Couldn't find new disk after #{retry_threshold} tries. Will attempt to add this disk again with options #{last_disk}") if @DEBUG
+      last_disk_num = $evm.get_state_var(:last_disk_num)
+      new_disks_queue[last_disk_num] = last_disk
+      $evm.set_state_var(new_disk_queue_name, new_disks_queue)
+    end
+  end
   
   # get next disk off of queue
   $evm.log(:info, "new_disks_queue => #{new_disks_queue}") if @DEBUG
-  unless new_disks_queue.empty?
+  #Unless we're out of disks to add or are currently validating one
+  unless new_disks_queue.empty? or last_disk_successful == false
     new_disk_num, new_disk_options = new_disks_queue.shift
+
+    #Save information about this disk so it can be validated
+    $evm.set_state_var(:last_disk, new_disk_options)
+    $evm.set_state_var(:last_disk_num, new_disk_num)
+    $evm.set_state_var(:disk_count, vm.num_hard_disks)
+    $evm.set_state_var(:storage_size, vm.provisioned_storage)
   
     # add the aditional disk
     $evm.log(:info, "Add new disk of size '#{new_disk_options[:size]}G' to VM #{vm.name} with new_disk_options: #{new_disk_options}")
@@ -220,13 +259,15 @@ begin
       size_mb,
       new_disk_options
     )
+
+    last_disk_successful = false
   else
     $evm.log(:info, "No disks left on queue #{new_disk_queue_name}") if @DEBUG
   end
   
-  # if the new disk queue is not empty then iterate again
+  # if there are more disks to add or verify, retry
   # else done adding new disks
-  unless new_disks_queue.empty?
+  unless new_disks_queue.empty? and last_disk_successful != false
     retry_interval = get_param(:retry_interval)
     
     # set the state for the next loop
